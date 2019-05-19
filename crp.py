@@ -10,7 +10,7 @@ class CRP(object):
         self.alpha = alpha
         self.data = None
 
-        self.gs_n_iters = 40
+        self.gs_n_iters = 75
         self.emp_bayes_interval = 5
         self.emp_bayes_start = 10
 
@@ -25,8 +25,8 @@ class CRP(object):
         cluster_prior = [len(self.clusters[cls_id]) / (self.alpha + cust) for cls_id in self.clusters]
         cluster_prior.append(self.alpha / (self.alpha + cust))
 
-        likelihood = self.likelihood(ix=cust)
-        cluster_posterior = cluster_prior * likelihood
+        likelihood_wts = self.likelihood(ix=cust)
+        cluster_posterior = cluster_prior * likelihood_wts
 
         cluster_ids = [cls_id for cls_id in self.clusters]
         new_id = 0 if cluster_ids == [] else (1 + max(cluster_ids))
@@ -62,7 +62,8 @@ class CRP(object):
         mean = np.append(mean, 0)
         std = [1 for cluster in self.clusters]
         std = np.append(std, 10)
-        return stats.norm.pdf(self.data[ix], mean, std)
+        ll = stats.norm.pdf(self.data[ix], mean, std)
+        return ll / sum(ll)
 
     def print_output(self, cluster_output, true_mean):
 
